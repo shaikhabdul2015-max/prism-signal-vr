@@ -1,0 +1,6 @@
+{
+  "name": "PRISM SIGNAL: BEYOND THE VOID",
+  "description": "Explore a mysterious deep-space communication chamber and align glowing alien crystals to decipher an ancient extraterrestrial beacon in this 3D sci-fi puzzle prototype.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
