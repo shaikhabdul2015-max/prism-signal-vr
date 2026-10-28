@@ -321,3 +321,129 @@ Explore. Interact. Discover what lies beyond the signal.
   <strong>🌠 Prism Signal VR</strong><br/>
   <em>Initiating next-generation space exploration...</em>
 </p>
+🛠️ Tech Stack
+
+Prism Signal VR is built using modern web technologies to support a futuristic, space-themed 3D application with a fast and efficient development workflow.
+
+💻 Technologies Used
+
+Technology| Category| Description
+TypeScript| Programming Language| Provides static typing and improved code maintainability.
+HTML5| Frontend| Defines the structure and entry point of the web application.
+Vite| Build Tool| Provides a fast development server and optimized production builds.
+Bun| Runtime & Package Manager| Installs dependencies and executes project scripts efficiently.
+
+⚡ Why This Tech Stack?
+
+- TypeScript: Improves code reliability through static type checking.
+- HTML5: Provides the foundation for the application's web interface.
+- Vite: Enables fast development with Hot Module Replacement (HMR) and production build optimization.
+- Bun: Simplifies dependency installation and script execution.
+
+---
+
+📦 Installation & Setup
+
+Follow these steps to set up and run Prism Signal VR on your local machine.
+
+Prerequisites
+
+Make sure the following tools are installed:
+
+- "Git" (https://git-scm.com/) — For cloning the repository.
+- "Bun" (https://bun.sh/) — For installing dependencies and running the application.
+- A modern web browser — For viewing and testing the application.
+
+Verify your Bun installation:
+
+bun --version
+
+🚀 Quick Start Guide
+
+Step 1: Clone the Repository
+
+git clone https://github.com/YOUR_USERNAME/prism-signal-vr.git
+
+Replace "YOUR_USERNAME" with your actual GitHub username or organization.
+
+Step 2: Navigate to the Project Directory
+
+cd prism-signal-vr
+
+Step 3: Install Dependencies
+
+bun install
+
+This command installs the dependencies defined in the project's package configuration.
+
+Step 4: Start the Development Server
+
+bun run dev
+
+Once the server starts, open the local URL displayed in your terminal.
+
+The default Vite development URL is usually:
+
+http://localhost:5173
+
+If port "5173" is already in use, Vite may automatically select another available port.
+
+🎉 You're all set! The Prism Signal VR application should now be running locally.
+
+---
+
+📜 Scripts
+
+Prism Signal VR uses Bun to execute the scripts configured in "package.json".
+
+Available Commands
+
+Command| Description
+"bun install"| Installs project dependencies.
+"bun run dev"| Starts the Vite development server.
+"bun run build"| Builds the application for production.
+"bun run preview"| Runs a local server to preview the production build.
+
+🧪 Development Mode
+
+Start the development server:
+
+bun run dev
+
+Use the local URL provided in the terminal to access the application. Vite supports Hot Module Replacement, allowing supported changes to appear in the browser without a full page reload.
+
+🏗️ Production Build
+
+Generate an optimized production build:
+
+bun run build
+
+Vite typically generates the production files in the "dist/" directory.
+
+🔍 Preview the Production Build
+
+After the build completes successfully, run:
+
+bun run preview
+
+This starts a local preview server so you can test the production build before deployment.
+
+The preview URL will be displayed in the terminal, commonly using a port such as "4173".
+
+✅ Recommended Workflow
+
+Run the following commands in order:
+
+# Install dependencies
+bun install
+
+# Start development
+bun run dev
+
+# Generate production build
+bun run build
+
+# Preview production build
+bun run preview
+
+Note: The "dev", "build", and "preview" commands must be defined in your "package.json" scripts. The actual behavior depends on the project's configuration.
