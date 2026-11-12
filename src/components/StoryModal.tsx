@@ -7,10 +7,26 @@ interface StoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onRestartMission: () => void;
+  activeChapter?: number;
+  onChangeChapter?: (chapterIndex: number) => void;
 }
 
-export const StoryModal: React.FC<StoryModalProps> = ({ isOpen, onClose, onRestartMission }) => {
-  const [activeChapter, setActiveChapter] = useState(0);
+export const StoryModal: React.FC<StoryModalProps> = ({
+  isOpen,
+  onClose,
+  onRestartMission,
+  activeChapter: controlledChapter,
+  onChangeChapter,
+}) => {
+  const [internalChapter, setInternalChapter] = useState(0);
+  const activeChapter = controlledChapter !== undefined ? controlledChapter : internalChapter;
+  const setActiveChapter = (updater: number | ((prev: number) => number)) => {
+    const next = typeof updater === 'function' ? updater(activeChapter) : updater;
+    if (controlledChapter === undefined) {
+      setInternalChapter(next);
+    }
+    onChangeChapter?.(next);
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

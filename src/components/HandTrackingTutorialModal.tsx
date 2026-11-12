@@ -143,34 +143,50 @@ export const HandTrackingTutorialModal: React.FC<HandTrackingTutorialModalProps>
             </div>
           </div>
 
-          {/* Step 3: Natural Rotation */}
+          {/* Step 3: View-Relative Rotation */}
           <div className="p-3 rounded-lg bg-slate-900/80 border border-slate-800 flex items-start gap-3">
             <div className="w-6 h-6 rounded-md bg-cyan-950 border border-cyan-700/60 text-cyan-400 flex items-center justify-center font-bold text-xs shrink-0">
               3
             </div>
             <div>
               <div className="font-bold text-slate-200 flex items-center gap-1.5">
-                <span>JITTER-FILTERED ROTATION</span>
-                <span className="text-[10px] text-cyan-400 font-normal">[Seated Hand Drift]</span>
+                <span>VIEW-RELATIVE PRISM ROTATION</span>
+                <span className="text-[10px] text-cyan-400 font-normal">[Camera-Relative]</span>
               </div>
               <p className="text-[11px] text-slate-400 mt-1 font-sans leading-relaxed">
-                While holding the pinch, smoothly shift your hand horizontally to dial the prism angle. Phase 7 exponential low-pass filtering eliminates optical tracking jitter for steady alignments.
+                While pinching a crystal, sweep your hand left or right relative to your current gaze direction to dial the prism angle smoothly—zero inversion regardless of which pedestal you face.
               </p>
             </div>
           </div>
 
-          {/* Step 4: Release */}
+          {/* Step 4: Seated Snap-Turn */}
           <div className="p-3 rounded-lg bg-slate-900/80 border border-slate-800 flex items-start gap-3">
             <div className="w-6 h-6 rounded-md bg-cyan-950 border border-cyan-700/60 text-cyan-400 flex items-center justify-center font-bold text-xs shrink-0">
               4
             </div>
             <div>
               <div className="font-bold text-slate-200 flex items-center gap-1.5">
-                <span>RELEASE TO LOCK</span>
-                <span className="text-[10px] text-slate-400 font-normal">[Release Hysteresis &gt;4.0cm]</span>
+                <span>AIR-SWIPE SNAP TURN</span>
+                <span className="text-[10px] text-amber-400 font-normal">[Pinch Empty Space ±45°]</span>
               </div>
               <p className="text-[11px] text-slate-400 mt-1 font-sans leading-relaxed">
-                Open your fingers (&gt;4.0 cm) to release the crystal cleanly. The optical beam reflects in real time according to the Snell-law optical simulation.
+                Pinch in open space (not targeting a crystal or UI button) and swipe horizontally to snap-turn ±45° while seated, or open fingers (&gt;4.0 cm) to release.
+              </p>
+            </div>
+          </div>
+
+          {/* Step 5: Wrist/Palm Menu & Phase 3 UI */}
+          <div className="p-3 rounded-lg bg-slate-900/80 border border-slate-800 flex items-start gap-3">
+            <div className="w-6 h-6 rounded-md bg-cyan-950 border border-cyan-700/60 text-cyan-400 flex items-center justify-center font-bold text-xs shrink-0">
+              5
+            </div>
+            <div>
+              <div className="font-bold text-slate-200 flex items-center gap-1.5">
+                <span>WRIST / PALM MENU &amp; 3D CIPHER PANEL</span>
+                <span className="text-[10px] text-emerald-400 font-normal">[Full Loop]</span>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1 font-sans leading-relaxed">
+                Raise your left palm toward your headset or pinch the floating wrist orb to open the 3D Wrist Menu (Start, Pause, Reset, Snap-Turn, Quick-Focus Ruby/Azure/Emerald, Exit VR). Phase 2 Victory, Phase 3 Alien Cipher, and the Story Archive all render as interactive 3D panels in VR.
               </p>
             </div>
           </div>

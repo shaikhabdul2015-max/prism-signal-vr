@@ -1,0 +1,292 @@
+{
+  "entities": {
+    "tenant": {
+      "title": "Tenant",
+      "description": "Enterprise tenant partition representing an isolated organization or operational unit",
+      "type": "object",
+      "properties": {
+        "tenantId": {
+          "type": "string",
+          "description": "Unique identifier of the tenant",
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "maxLength": 64
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the tenant",
+          "maxLength": 128
+        },
+        "slug": {
+          "type": "string",
+          "description": "URL-safe slug for tenant domain",
+          "pattern": "^[a-z0-9\\-]+$",
+          "maxLength": 64
+        },
+        "status": {
+          "type": "string",
+          "description": "Operational status of the tenant",
+          "enum": ["ACTIVE", "SUSPENDED", "PROVISIONING", "ARCHIVED"]
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp in ISO-8601 format"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Last update timestamp in ISO-8601 format"
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "User UID who provisioned the tenant",
+          "maxLength": 128
+        }
+      },
+      "required": ["tenantId", "name", "slug", "status", "createdAt", "updatedAt", "createdBy"]
+    },
+    "tenantMembership": {
+      "title": "TenantMembership",
+      "description": "Association linking a verified user to a tenant with specific RBAC role",
+      "type": "object",
+      "properties": {
+        "membershipId": {
+          "type": "string",
+          "description": "Unique membership record ID",
+          "maxLength": 128
+        },
+        "tenantId": {
+          "type": "string",
+          "description": "Tenant ID to which the membership applies",
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "maxLength": 64
+        },
+        "userId": {
+          "type": "string",
+          "description": "User UID assigned to this membership",
+          "maxLength": 128
+        },
+        "role": {
+          "type": "string",
+          "description": "Role within the tenant partition",
+          "enum": ["SUPER_ADMIN", "TENANT_ADMIN", "EDITOR", "VIEWER"]
+        },
+        "joinedAt": {
+          "type": "string",
+          "description": "Timestamp when membership was granted"
+        },
+        "status": {
+          "type": "string",
+          "description": "Membership status",
+          "enum": ["ACTIVE", "INVITED", "REVOKED"]
+        },
+        "assignedBy": {
+          "type": "string",
+          "description": "User UID who assigned the role",
+          "maxLength": 128
+        }
+      },
+      "required": ["membershipId", "tenantId", "userId", "role", "joinedAt", "status", "assignedBy"]
+    },
+    "telemetryRecord": {
+      "title": "TelemetryRecord",
+      "description": "Diagnostic telemetry snapshot captured during WebXR execution",
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "description": "Unique session ID",
+          "maxLength": 128
+        },
+        "tenantId": {
+          "type": "string",
+          "description": "Tenant partition ID",
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "maxLength": 64
+        },
+        "userId": {
+          "type": "string",
+          "description": "Operator or user UID",
+          "maxLength": 128
+        },
+        "startedAt": {
+          "type": "string",
+          "description": "Session start timestamp"
+        },
+        "completedAt": {
+          "type": "string",
+          "description": "Session completion timestamp"
+        },
+        "expectedJointCount": {
+          "type": "integer",
+          "description": "Expected skeletal joint count"
+        },
+        "autoSavedAt": {
+          "type": "string",
+          "description": "Auto-save timestamp"
+        }
+      },
+      "required": ["sessionId", "tenantId", "userId", "startedAt", "expectedJointCount"]
+    },
+    "incidentRecord": {
+      "title": "IncidentRecord",
+      "description": "Correlated incident or anomaly record captured during operation",
+      "type": "object",
+      "properties": {
+        "incidentId": {
+          "type": "string",
+          "description": "Unique incident ID",
+          "maxLength": 128
+        },
+        "tenantId": {
+          "type": "string",
+          "description": "Tenant partition ID",
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "maxLength": 64
+        },
+        "fingerprint": {
+          "type": "string",
+          "description": "Deduplication fingerprint",
+          "maxLength": 128
+        },
+        "category": {
+          "type": "string",
+          "description": "Incident categorization",
+          "maxLength": 64
+        },
+        "severity": {
+          "type": "string",
+          "description": "Severity level",
+          "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+        },
+        "state": {
+          "type": "string",
+          "description": "Lifecycle state of incident",
+          "enum": ["DETECTED", "ANALYZING", "MITIGATING", "RESOLVED", "FALSE_POSITIVE"]
+        },
+        "title": {
+          "type": "string",
+          "description": "Short incident title",
+          "maxLength": 256
+        },
+        "detectedAt": {
+          "type": "string",
+          "description": "Detection timestamp"
+        },
+        "occurrenceCount": {
+          "type": "integer",
+          "description": "Cumulative occurrence count"
+        }
+      },
+      "required": ["incidentId", "tenantId", "fingerprint", "category", "severity", "state", "detectedAt"]
+    },
+    "syncDocument": {
+      "title": "SyncDocument",
+      "description": "Replicated multi-tenant document with optimistic concurrency versioning",
+      "type": "object",
+      "properties": {
+        "docId": {
+          "type": "string",
+          "description": "Document identifier",
+          "maxLength": 128
+        },
+        "tenantId": {
+          "type": "string",
+          "description": "Tenant partition identifier",
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "maxLength": 64
+        },
+        "collection": {
+          "type": "string",
+          "description": "Logical collection name",
+          "maxLength": 64
+        },
+        "version": {
+          "type": "integer",
+          "description": "Monotonically increasing version counter"
+        },
+        "clientUpdatedAt": {
+          "type": "string",
+          "description": "Client modification timestamp"
+        },
+        "checksum": {
+          "type": "string",
+          "description": "Content verification checksum",
+          "maxLength": 128
+        },
+        "lastModifiedBy": {
+          "type": "string",
+          "description": "User UID who performed the last write",
+          "maxLength": 128
+        }
+      },
+      "required": ["docId", "tenantId", "collection", "version", "clientUpdatedAt", "checksum", "lastModifiedBy"]
+    },
+    "userProfile": {
+      "title": "UserProfile",
+      "description": "Enterprise user identity and profile metadata",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Unique user ID",
+          "maxLength": 128
+        },
+        "email": {
+          "type": "string",
+          "description": "User email address",
+          "maxLength": 256
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name",
+          "maxLength": 128
+        },
+        "role": {
+          "type": "string",
+          "description": "System role",
+          "enum": ["Admin", "Engineer", "Operator", "Viewer"]
+        },
+        "tenantId": {
+          "type": "string",
+          "description": "Active tenant ID",
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "maxLength": 64
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Account creation timestamp"
+        },
+        "lastLoginAt": {
+          "type": "string",
+          "description": "Last authentication timestamp"
+        }
+      },
+      "required": ["uid", "role", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/tenants/{tenantId}": {
+      "schema": "tenant",
+      "description": "Enterprise tenant configuration and metadata"
+    },
+    "/tenants/{tenantId}/members/{userId}": {
+      "schema": "tenantMembership",
+      "description": "Tenant membership and role assignments"
+    },
+    "/tenants/{tenantId}/telemetry/{sessionId}": {
+      "schema": "telemetryRecord",
+      "description": "Diagnostic WebXR telemetry isolated per tenant"
+    },
+    "/tenants/{tenantId}/incidents/{fingerprint}": {
+      "schema": "incidentRecord",
+      "description": "Correlated incident records isolated per tenant"
+    },
+    "/tenants/{tenantId}/documents/{docId}": {
+      "schema": "syncDocument",
+      "description": "Replicated state documents scoped by tenant"
+    },
+    "/users/{userId}": {
+      "schema": "userProfile",
+      "description": "User identity and authentication profile"
+    }
+  }
+}

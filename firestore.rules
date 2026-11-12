@@ -1,0 +1,199 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ========================================================================
+    // GLOBAL SECURITY HELPERS & PRIMITIVES
+    // ========================================================================
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'shaikhabdul2015@gmail.com' ||
+        exists(/databases/$(database)/documents/super_admins/$(request.auth.uid))
+      );
+    }
+
+    function isTenantMember(tenantId) {
+      return isSignedIn() && (
+        isSuperAdmin() ||
+        exists(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid))
+      );
+    }
+
+    function isTenantWriter(tenantId) {
+      return isSignedIn() && (
+        isSuperAdmin() ||
+        (
+          exists(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)).data.role in ['SUPER_ADMIN', 'TENANT_ADMIN', 'EDITOR']
+        )
+      );
+    }
+
+    function isTenantAdmin(tenantId) {
+      return isSignedIn() && (
+        isSuperAdmin() ||
+        (
+          exists(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)).data.role in ['SUPER_ADMIN', 'TENANT_ADMIN']
+        )
+      );
+    }
+
+    // ========================================================================
+    // STANDALONE SCHEMA VALIDATION HELPERS
+    // ========================================================================
+
+    function isValidTenant(data) {
+      return data.tenantId is string && isValidId(data.tenantId) &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 128 &&
+        data.slug is string && data.slug.size() >= 1 && data.slug.size() <= 64 &&
+        data.status in ['ACTIVE', 'SUSPENDED', 'PROVISIONING', 'ARCHIVED'] &&
+        data.createdBy is string && data.createdBy.size() <= 128;
+    }
+
+    function isValidTenantMembership(data) {
+      return data.membershipId is string && isValidId(data.membershipId) &&
+        data.tenantId is string && isValidId(data.tenantId) &&
+        data.userId is string && data.userId.size() <= 128 &&
+        data.role in ['SUPER_ADMIN', 'TENANT_ADMIN', 'EDITOR', 'VIEWER'] &&
+        data.status in ['ACTIVE', 'INVITED', 'REVOKED'] &&
+        data.assignedBy is string && data.assignedBy.size() <= 128;
+    }
+
+    function isValidTelemetry(data) {
+      return data.sessionId is string && isValidId(data.sessionId) &&
+        data.userId is string && data.userId.size() <= 128 &&
+        data.expectedJointCount is int && data.expectedJointCount >= 0 && data.expectedJointCount <= 100;
+    }
+
+    function isValidIncident(data) {
+      return data.incidentId is string && isValidId(data.incidentId) &&
+        data.fingerprint is string && data.fingerprint.size() <= 128 &&
+        data.category is string && data.category.size() <= 64 &&
+        data.severity in ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] &&
+        data.state in ['DETECTED', 'ANALYZING', 'MITIGATING', 'RESOLVED', 'FALSE_POSITIVE'];
+    }
+
+    function isValidSyncDocument(data) {
+      return data._version is int && data._version >= 1 &&
+        data._checksum is string && data._checksum.size() <= 128 &&
+        data._tenantId is string && isValidId(data._tenantId) &&
+        data._lastModifiedBy is string && data._lastModifiedBy.size() <= 128;
+    }
+
+    // ========================================================================
+    // TENANT BOUNDARIES & SUBCOLLECTION RULES
+    // ========================================================================
+
+    // Tenant record
+    match /tenants/{tenantId} {
+      allow get: if isTenantMember(tenantId);
+      allow list: if isSuperAdmin();
+      allow create: if isSuperAdmin() && isValidId(tenantId) && isValidTenant(request.resource.data);
+      allow update: if isTenantAdmin(tenantId) && isValidId(tenantId) && isValidTenant(request.resource.data) &&
+        request.resource.data.tenantId == resource.data.tenantId &&
+        request.resource.data.createdBy == resource.data.createdBy;
+      allow delete: if isSuperAdmin();
+
+      // Tenant Memberships
+      match /members/{memberUserId} {
+        allow get: if isTenantMember(tenantId);
+        allow list: if isTenantMember(tenantId);
+        allow create: if isTenantAdmin(tenantId) && isValidId(memberUserId) && isValidTenantMembership(request.resource.data) &&
+          request.resource.data.tenantId == tenantId;
+        allow update: if isTenantAdmin(tenantId) && isValidId(memberUserId) && isValidTenantMembership(request.resource.data) &&
+          request.resource.data.tenantId == resource.data.tenantId &&
+          request.resource.data.userId == resource.data.userId;
+        allow delete: if isTenantAdmin(tenantId);
+      }
+
+      // Tenant-Scoped Telemetry
+      match /telemetry/{sessionId} {
+        allow get: if isTenantMember(tenantId);
+        allow list: if isTenantMember(tenantId);
+        allow create: if isTenantWriter(tenantId) && isValidId(sessionId) && isValidTelemetry(request.resource.data);
+        allow update: if isTenantWriter(tenantId) && isValidId(sessionId) && isValidTelemetry(request.resource.data) &&
+          request.resource.data.sessionId == resource.data.sessionId;
+        allow delete: if isTenantAdmin(tenantId);
+      }
+
+      // Tenant-Scoped Incidents
+      match /incidents/{fingerprint} {
+        allow get: if isTenantMember(tenantId);
+        allow list: if isTenantMember(tenantId);
+        allow create: if isTenantWriter(tenantId) && isValidId(fingerprint) && isValidIncident(request.resource.data);
+        allow update: if isTenantWriter(tenantId) && isValidId(fingerprint) && isValidIncident(request.resource.data) &&
+          request.resource.data.incidentId == resource.data.incidentId;
+        allow delete: if isTenantAdmin(tenantId);
+      }
+
+      // Tenant-Scoped Replicated Documents
+      match /documents/{docId} {
+        allow get: if isTenantMember(tenantId);
+        allow list: if isTenantMember(tenantId);
+        allow create: if isTenantWriter(tenantId) && isValidId(docId) && isValidSyncDocument(request.resource.data) &&
+          request.resource.data._tenantId == tenantId;
+        allow update: if isTenantWriter(tenantId) && isValidId(docId) && isValidSyncDocument(request.resource.data) &&
+          request.resource.data._tenantId == resource.data._tenantId;
+        allow delete: if isTenantAdmin(tenantId);
+      }
+    }
+
+    // ========================================================================
+    // USER PROFILES & PRIVATE IDENTITY
+    // ========================================================================
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isSuperAdmin();
+      allow list: if isSuperAdmin();
+      allow create: if isOwner(userId) && isValidId(userId);
+      allow update: if isOwner(userId) && isValidId(userId) &&
+        request.resource.data.uid == resource.data.uid;
+      allow delete: if isSuperAdmin();
+    }
+
+    // Legacy collections (maintained with tenant and owner gates)
+    match /vr_telemetry/{sessionId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(sessionId);
+      allow delete: if isSuperAdmin();
+    }
+
+    match /vr_incidents/{fingerprint} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(fingerprint);
+      allow delete: if isSuperAdmin();
+    }
+
+    // Connectivity verification checks
+    match /_verification/{docId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /_system/{docId} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
+    // ========================================================================
+    // DEFAULT-DENY CATCH-ALL SAFETY NET
+    // ========================================================================
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

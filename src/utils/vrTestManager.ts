@@ -6,6 +6,7 @@ import {
   VRTestStatus,
   DiagnosticsSessionState,
 } from '../types/game';
+import { DiagnosticsAIResponse, AIAnalysisResult } from '../types/diagnostics';
 
 const STORAGE_KEY = 'PRISM_SIGNAL_VR_TEST_SUITE_V1';
 
@@ -639,7 +640,8 @@ export function loadTestSuite(): PhysicalVRTestCase[] {
 export function exportTestSuiteToJSON(
   tests: PhysicalVRTestCase[],
   deviceInfo: VRDeviceEnvironmentInfo,
-  diagState: DiagnosticsSessionState
+  diagState: DiagnosticsSessionState,
+  aiAnalysis?: DiagnosticsAIResponse | AIAnalysisResult | null
 ): string {
   const summary = calculateTestSuiteSummary(tests);
   const payload = {
@@ -657,6 +659,7 @@ export function exportTestSuiteToJSON(
       rightHandStatus: diagState.rightHand.trackingState,
       interruptionCount: diagState.leftHand.interruptionCount + diagState.rightHand.interruptionCount,
     },
+    aiDiagnosticsEvaluation: aiAnalysis || null,
     summaryMetrics: summary,
     hardwareDisclosures: [
       'Timing data measured only from available real WebXR and JavaScript performance timestamps.',
@@ -690,7 +693,8 @@ export function exportTestSuiteToJSON(
 export function exportTestSuiteToText(
   tests: PhysicalVRTestCase[],
   deviceInfo: VRDeviceEnvironmentInfo,
-  diagState: DiagnosticsSessionState
+  diagState: DiagnosticsSessionState,
+  aiAnalysis?: DiagnosticsAIResponse | AIAnalysisResult | null
 ): string {
   const summary = calculateTestSuiteSummary(tests);
   const dateStr = new Date().toISOString();
@@ -714,7 +718,100 @@ Real-time Session State:
 - Rendering Speed:   ${diagState.fps} FPS (~${diagState.avgFrameDeltaMs}ms avg delta)
 - Left Hand State:   ${diagState.leftHand.trackingState.toUpperCase()} (${diagState.leftHand.availableJointsCount}/25 joints)
 - Right Hand State:  ${diagState.rightHand.trackingState.toUpperCase()} (${diagState.rightHand.availableJointsCount}/25 joints)
+`;
 
+  if (aiAnalysis) {
+    if ('overallStatus' in aiAnalysis) {
+      text += `
+--------------------------------------------------------------------------------
+SENIOR WEBXR QA AUTOMATION EVALUATION (Schema v${aiAnalysis.schemaVersion})
+--------------------------------------------------------------------------------
+Overall QA Status:              ${aiAnalysis.overallStatus}
+Environmental Causation Status: ${aiAnalysis.environmentalAssessment.causationStatus} [MANDATORY RULE #2]
+Selected Lighting Preset:       ${aiAnalysis.environmentalAssessment.selectedPreset || 'None recorded'}
+Causation Evidence Token:       ${aiAnalysis.environmentalAssessment.causationEvidence || 'None (Unproven)'}
+Rule #2 Assessment:
+${aiAnalysis.environmentalAssessment.explanation}
+
+Summary:
+${aiAnalysis.summary}
+
+Category Breakdown (6 Configured Categories):
+${aiAnalysis.categories
+  .map(
+    (c) =>
+      `  * [${c.status.padEnd(12)}] ${c.name.toUpperCase()}
+      Observations: ${c.observations.join('; ') || 'None'}
+      Issues:       ${c.issues.join('; ') || 'None'}
+      Next Steps:   ${c.recommendations.join('; ') || 'None'}`
+  )
+  .join('\n')}
+
+Key Metrics:
+- Observed / Expected Joints: ${aiAnalysis.metrics.observedJointCount ?? 'N/A'} / ${aiAnalysis.metrics.expectedJointCount ?? 25}
+- Measured Latency:           ${aiAnalysis.metrics.measuredLatencyMs ?? 'N/A'} ms
+- Tracking Loss Events:       ${aiAnalysis.metrics.trackingLossEvents ?? 0}
+
+Recommendations:
+${aiAnalysis.recommendations.map((r) => `  * ${r}`).join('\n')}
+`;
+    } else {
+      text += `
+--------------------------------------------------------------------------------
+AI DIAGNOSTIC EVALUATION (${aiAnalysis.modelUsed})
+--------------------------------------------------------------------------------
+Overall Tracking Health: ${aiAnalysis.overallHealth.toUpperCase()}
+Generated:               ${aiAnalysis.timestamp}
+Summary:
+${aiAnalysis.summary}
+
+Latency Boundary Notice:
+${aiAnalysis.latencyBoundaryNotice}
+
+Detected Anomalies (${aiAnalysis.anomalies.length}):
+${
+  aiAnalysis.anomalies.length > 0
+    ? aiAnalysis.anomalies
+        .map(
+          (a, i) =>
+            `  [${i + 1}] [${a.severity.toUpperCase()}] ${a.title}\n      Detail: ${a.detail}\n      Mitigation: ${a.recommendation}`
+        )
+        .join('\n')
+    : '  None detected. Telemetry within standard parameters.'
+}
+
+Recommendations:
+${aiAnalysis.recommendations.map((r) => `  * ${r}`).join('\n')}
+`;
+
+      if (aiAnalysis.qaReport) {
+        text += `
+--------------------------------------------------------------------------------
+SENIOR WEBXR QA AUTOMATION EVALUATION (Schema v${aiAnalysis.qaReport.schemaVersion})
+--------------------------------------------------------------------------------
+Overall QA Status:              ${aiAnalysis.qaReport.overallStatus}
+Environmental Causation Status: ${aiAnalysis.qaReport.environmentalAssessment.causationStatus} [MANDATORY RULE #2]
+Selected Lighting Preset:       ${aiAnalysis.qaReport.environmentalAssessment.selectedPreset || 'None recorded'}
+Causation Evidence Token:       ${aiAnalysis.qaReport.environmentalAssessment.causationEvidence || 'None (Unproven)'}
+Rule #2 Assessment:
+${aiAnalysis.qaReport.environmentalAssessment.explanation}
+
+Category Breakdown (6 Configured Categories):
+${aiAnalysis.qaReport.categories
+  .map(
+    (c) =>
+      `  * [${c.status.padEnd(12)}] ${c.name.toUpperCase()}
+      Observations: ${c.observations.join('; ') || 'None'}
+      Issues:       ${c.issues.join('; ') || 'None'}
+      Next Steps:   ${c.recommendations.join('; ') || 'None'}`
+  )
+  .join('\n')}
+`;
+      }
+    }
+  }
+
+  text += `
 2. TEST SUITE EXECUTION SUMMARY
 --------------------------------------------------------------------------------
 Total Test Cases:    ${summary.total}

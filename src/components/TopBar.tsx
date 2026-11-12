@@ -1,5 +1,4 @@
-import React from 'react';
-import { Volume2, VolumeX, Pause, HelpCircle, Eye, Glasses, Zap, RotateCcw, Target, Sparkles, Hand, Activity } from 'lucide-react';
+import { Volume2, VolumeX, Pause, HelpCircle, Eye, Glasses, Zap, RotateCcw, Target, Sparkles, Hand, Activity, Cpu, Loader2 } from 'lucide-react';
 import { MissionState, VRSupportStatus, HandTrackingStatus } from '../types/game';
 
 interface TopBarProps {
@@ -11,6 +10,7 @@ interface TopBarProps {
   onOpenVRInfo: () => void;
   onOpenHandsGuide?: () => void;
   onOpenDiagnostics?: () => void;
+  onOpenVirtualXR?: () => void;
   onToggleBeamSource: () => void;
   onResetPuzzle: () => void;
   onFocusTarget: () => void;
@@ -20,6 +20,7 @@ interface TopBarProps {
   onExitVR?: () => void;
   vrSupportStatus?: VRSupportStatus;
   handTrackingStatus?: HandTrackingStatus;
+  isStartingVR?: boolean;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -31,6 +32,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   onOpenVRInfo,
   onOpenHandsGuide,
   onOpenDiagnostics,
+  onOpenVirtualXR,
   onToggleBeamSource,
   onResetPuzzle,
   onFocusTarget,
@@ -40,6 +42,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   onExitVR,
   vrSupportStatus = 'checking',
   handTrackingStatus = 'unavailable',
+  isStartingVR = false,
 }) => {
   const { puzzleProgress, decodingState } = state;
   const isTargetHit = puzzleProgress.isTargetReceiverHit;
@@ -48,6 +51,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   const isVRActive = vrSupportStatus === 'active';
   const isVRSupported = vrSupportStatus === 'supported';
   const isHandsActive = handTrackingStatus === 'active';
+  const isDevSimAllowed = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-20 pointer-events-none px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 flex flex-col gap-1.5 sm:gap-2">
@@ -244,6 +248,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 onOpenVRInfo();
               }
             }}
+            disabled={isStartingVR}
             aria-label={
               isVRActive
                 ? 'Exit Immersive WebXR Session'
@@ -252,7 +257,9 @@ export const TopBar: React.FC<TopBarProps> = ({
                 : 'WebXR VR Information and Requirements'
             }
             title={
-              isVRActive
+              isStartingVR
+                ? 'Starting WebXR Session...'
+                : isVRActive
                 ? 'Exit Immersive VR Session'
                 : isVRSupported
                 ? 'Enter Immersive VR Session (WebXR)'
@@ -264,11 +271,15 @@ export const TopBar: React.FC<TopBarProps> = ({
                 : isVRSupported
                 ? 'bg-cyan-950/90 border-cyan-400/80 text-cyan-200 hover:bg-cyan-900 shadow-md shadow-cyan-500/20'
                 : 'bg-slate-950/85 border-slate-700 hover:border-cyan-500/80 text-slate-300 hover:text-cyan-300'
-            }`}
+            } ${isStartingVR ? 'opacity-70 cursor-wait' : ''}`}
           >
-            <Glasses className={`w-4 h-4 ${isVRActive ? 'text-emerald-400' : isVRSupported ? 'text-cyan-400' : 'text-slate-400'}`} />
+            {isStartingVR ? (
+              <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+            ) : (
+              <Glasses className={`w-4 h-4 ${isVRActive ? 'text-emerald-400' : isVRSupported ? 'text-cyan-400' : 'text-slate-400'}`} />
+            )}
             <span className="hidden sm:inline text-[11px]">
-              {isVRActive ? 'EXIT VR' : isVRSupported ? 'ENTER VR' : 'VR'}
+              {isStartingVR ? 'STARTING...' : isVRActive ? 'EXIT VR' : isVRSupported ? 'ENTER VR' : 'VR'}
             </span>
           </button>
 
@@ -303,6 +314,19 @@ export const TopBar: React.FC<TopBarProps> = ({
             >
               <Activity className="w-4 h-4 text-cyan-400" />
               <span className="hidden lg:inline text-[11px]">DIAG</span>
+            </button>
+          )}
+
+          {/* Development-Only Virtual WebXR Test Dashboard Launcher */}
+          {isDevSimAllowed && onOpenVirtualXR && (
+            <button
+              onClick={onOpenVirtualXR}
+              aria-label="Virtual WebXR Hardware Simulation Dashboard [V]"
+              title="Dev-Only Virtual WebXR Hardware Simulation & Test Rig"
+              className="flex items-center justify-center gap-1.5 min-w-[40px] min-h-[40px] px-2 sm:px-2.5 rounded-lg text-xs font-mono font-semibold transition-all border bg-slate-950/85 border-amber-500/50 hover:border-amber-400 text-amber-300 hover:text-amber-200 active:scale-95 touch-manipulation"
+            >
+              <Cpu className="w-4 h-4 text-amber-400" />
+              <span className="hidden lg:inline text-[11px]">SIM XR</span>
             </button>
           )}
 

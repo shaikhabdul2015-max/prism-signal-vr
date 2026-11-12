@@ -1,0 +1,150 @@
+{
+  "project": "PRISM SIGNAL: BEYOND THE VOID",
+  "auditTimestamp": "2026-11-10T13:30:00Z",
+  "auditClassificationNote": "Evidence-based integration assessment across Phases 1-36 and Stages 1-7",
+  "overallVerdict": "PARTIALLY_VERIFIED",
+  "allowedClassifications": [
+    "VERIFIED",
+    "PARTIALLY_VERIFIED",
+    "FAILED",
+    "NOT_IMPLEMENTED",
+    "NOT_TESTED"
+  ],
+  "verifiedCommands": {
+    "typeScriptCheck": {
+      "command": "npx tsc --noEmit",
+      "exitCode": 0,
+      "errors": 0,
+      "verdict": "VERIFIED"
+    },
+    "automatedTestSuite": {
+      "command": "npm test",
+      "suites": 183,
+      "topLevelSuites": 88,
+      "tests": 502,
+      "passed": 502,
+      "failed": 0,
+      "skipped": 0,
+      "cancelled": 0,
+      "durationMs": 31213.15,
+      "verdict": "VERIFIED"
+    },
+    "productionBuild": {
+      "command": "npm run build",
+      "modulesTransformed": 1861,
+      "durationSeconds": 2.48,
+      "distIndexKb": 1.67,
+      "distJsKb": 3285.28,
+      "chunkSizeWarning": true,
+      "verdict": "VERIFIED"
+    },
+    "devSecOpsGate": {
+      "command": "bash scripts/devsecops-gate.sh",
+      "checksPassed": 5,
+      "checksTotal": 5,
+      "leakedSecrets": 0,
+      "weakCiphers": 0,
+      "verdict": "VERIFIED"
+    },
+    "dependencyAudit": {
+      "command": "npm audit --json",
+      "advisoriesCount": 0,
+      "highOrCritical": 0,
+      "verdict": "VERIFIED"
+    },
+    "eslint": {
+      "command": "node_modules/.bin/eslint",
+      "installed": false,
+      "verdict": "FAILED"
+    }
+  },
+  "staticImportGraph": {
+    "filesScanned": 327,
+    "brokenRelativeImports": 0,
+    "circularCyclesCount": 1,
+    "circularCycles": [
+      [
+        "src/engines/DistributedAgentNetwork.ts",
+        "src/engines/AgentCommunicationProtocol.ts",
+        "src/engines/DistributedAgentNetwork.ts"
+      ]
+    ],
+    "orphanedDuplicateFiles": [
+      "src/tests/HighThroughputQueue.test.ts"
+    ]
+  },
+  "measuredRuntimeBenchmarks": {
+    "httpHealth20ConcurrentMs": 49.16,
+    "httpHealthAvgMs": 2.46,
+    "llamaAnalyzeFallbackMs": 71.8,
+    "cloudStatusMs": 3.04,
+    "agentOrchestrator500CyclesMs": 85.58,
+    "agentOrchestratorAvgCycleMs": 0.1712,
+    "agentOrchestratorHeapDeltaMb": -0.32,
+    "humanControlPriorityYieldVerified": true,
+    "kmsEnvelopeRoundTripMs": 2.325,
+    "rateLimiter15ConcurrentAllowed": 10,
+    "rateLimiter15ConcurrentDenied": 5,
+    "eventQueue10kDrainMs": 277.53,
+    "eventQueueThroughputEps": 36032
+  },
+  "subsystems": {
+    "phases1To14Core3DAndDiagnostics": "PARTIALLY_VERIFIED",
+    "phases15To36EnterpriseEngines": "PARTIALLY_VERIFIED",
+    "stage1HighThroughputAndUIBudget": "PARTIALLY_VERIFIED",
+    "stage2GpuRecovery": "VERIFIED",
+    "stage3MultiTenantReplication": "PARTIALLY_VERIFIED",
+    "stage4SecurityMiddleware": "PARTIALLY_VERIFIED",
+    "stage5_1CdnAssetStreaming": "PARTIALLY_VERIFIED",
+    "stage5_2LocalKmsAndEnvelopeEncryption": "VERIFIED",
+    "stage5_2CloudKmsLive": "NOT_TESTED",
+    "stage5_3ThreatMitigationAndRateLimiterLogic": "VERIFIED",
+    "stage5_3RedisLiveAndExpressWiring": "NOT_TESTED",
+    "stage6And7MultiAgentHumanPriorityLogic": "VERIFIED",
+    "stage6And7AppRuntimeWiring": "NOT_IMPLEMENTED",
+    "physicalWebXrHeadsets": "NOT_TESTED",
+    "awsAzurePkcs11Adapters": "NOT_IMPLEMENTED"
+  },
+  "defects": [
+    {
+      "id": "DEF-01",
+      "severity": "HIGH",
+      "summary": "server.ts requestTimeoutMiddleware(8000) preempts llama.ts 10000ms fallback timeout"
+    },
+    {
+      "id": "DEF-02",
+      "severity": "HIGH",
+      "summary": "AssetStreamingManager reads process.env.VITE_CDN_BASE_URL instead of import.meta.env.VITE_CDN_BASE_URL"
+    },
+    {
+      "id": "DEF-03",
+      "severity": "MEDIUM",
+      "summary": "replayProtectionMiddleware skips validation when replay headers are omitted"
+    },
+    {
+      "id": "DEF-04",
+      "severity": "MEDIUM",
+      "summary": "firestore.rules legacy /vr_telemetry and /vr_incidents allow any signed-in user without tenant check"
+    },
+    {
+      "id": "DEF-05",
+      "severity": "MEDIUM",
+      "summary": "ExecutiveAgentCouncil and Phase36IntegrationCoordinator report stale static counts and unlinked Stage 7 spatialStatus"
+    },
+    {
+      "id": "DEF-06",
+      "severity": "LOW",
+      "summary": "1 circular import between DistributedAgentNetwork.ts and AgentCommunicationProtocol.ts"
+    },
+    {
+      "id": "DEF-07",
+      "severity": "LOW",
+      "summary": "Orphaned duplicate test file at src/tests/HighThroughputQueue.test.ts"
+    },
+    {
+      "id": "DEF-08",
+      "severity": "LOW",
+      "summary": "3.28 MB single JS bundle (>500 kB Vite warning) and eslint binary absent"
+    }
+  ]
+}

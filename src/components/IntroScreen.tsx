@@ -9,6 +9,7 @@ interface IntroScreenProps {
   onOpenVRInfo?: () => void;
   isVRSupported?: boolean;
   vrSupportStatus?: VRSupportStatus;
+  isStartingVR?: boolean;
 }
 
 export const IntroScreen: React.FC<IntroScreenProps> = ({
@@ -18,6 +19,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
   onOpenVRInfo,
   isVRSupported = false,
   vrSupportStatus = 'checking',
+  isStartingVR = false,
 }) => {
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-none overflow-y-auto">
@@ -27,7 +29,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
 
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-800 text-[10px] sm:text-[11px] font-mono text-cyan-300 uppercase tracking-widest mb-3 sm:mb-4">
           <Orbit className="w-3.5 h-3.5 text-cyan-400 animate-spin" />
-          <span className="truncate max-w-[240px] sm:max-w-none">DEEP-SPACE ARRAY // PHASE 8 MOBILE & VR</span>
+          <span className="truncate max-w-[240px] sm:max-w-none">DEEP-SPACE ARRAY // PHASE 13 WEBXR READY</span>
         </div>
 
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-1.5 font-mono">
@@ -62,31 +64,44 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
           </div>
         </div>
 
-        {/* Action Buttons with 44px minimum touch targets */}
+        {/* Action Buttons with >=48px accessible gaze/touch hit targets */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3 max-w-md mx-auto">
           <button
             onClick={onStart}
-            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 min-h-[44px] bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-slate-950 font-mono font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-cyan-500/25 transition-all transform active:scale-95"
+            disabled={isStartingVR}
+            aria-label="Start mission in 2D desktop or mobile mode"
+            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 min-h-[48px] bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-slate-950 font-mono font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-cyan-500/25 transition-all transform active:scale-95 disabled:opacity-50"
           >
             <Play className="w-4 h-4 fill-current" />
-            <span>START MISSION</span>
+            <span>START MISSION (2D)</span>
           </button>
 
-          {isVRSupported && onEnterVR ? (
+          {(isVRSupported || vrSupportStatus === 'error') && onEnterVR ? (
             <button
-              onClick={() => {
-                onStart();
-                onEnterVR();
-              }}
-              className="flex items-center justify-center gap-2 px-4 py-3 min-h-[44px] bg-cyan-950/90 hover:bg-cyan-900 border border-cyan-400 text-cyan-200 font-mono text-xs font-bold rounded-xl transition-all shadow-md active:scale-95"
+              onClick={onEnterVR}
+              disabled={isStartingVR}
+              aria-label="Enter immersive controller-free WebXR VR session"
+              className={`flex items-center justify-center gap-2 px-4 py-3 min-h-[48px] bg-cyan-950/90 hover:bg-cyan-900 border border-cyan-400 text-cyan-200 font-mono text-xs font-bold rounded-xl transition-all shadow-md active:scale-95 ${
+                isStartingVR ? 'opacity-70 cursor-wait' : ''
+              }`}
             >
-              <Glasses className="w-4 h-4 text-cyan-400" />
-              <span>START IN VR</span>
+              {isStartingVR ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+                  <span>STARTING VR...</span>
+                </>
+              ) : (
+                <>
+                  <Glasses className="w-4 h-4 text-cyan-400" />
+                  <span>{vrSupportStatus === 'error' ? 'RETRY VR' : 'ENTER HANDS-FREE VR'}</span>
+                </>
+              )}
             </button>
           ) : vrSupportStatus === 'checking' ? (
             <button
               disabled
-              className="flex items-center justify-center gap-2 px-3 py-3 min-h-[44px] bg-slate-900/60 border border-slate-800 text-slate-500 font-mono text-xs rounded-xl cursor-wait"
+              aria-label="Checking WebXR immersive-vr capability"
+              className="flex items-center justify-center gap-2 px-3 py-3 min-h-[48px] bg-slate-900/60 border border-slate-800 text-slate-500 font-mono text-xs rounded-xl cursor-wait"
             >
               <Loader2 className="w-4 h-4 animate-spin text-slate-500" />
               <span>CHECKING VR...</span>
@@ -94,7 +109,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
           ) : (
             <button
               onClick={onOpenVRInfo}
-              className="flex items-center justify-center gap-1.5 px-3 py-3 min-h-[44px] bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500/80 text-slate-400 hover:text-cyan-300 font-mono text-xs rounded-xl transition-colors active:scale-95"
+              aria-label="Open WebXR VR compatibility and specifications"
+              className="flex items-center justify-center gap-1.5 px-3 py-3 min-h-[48px] bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500/80 text-slate-400 hover:text-cyan-300 font-mono text-xs rounded-xl transition-colors active:scale-95"
               title="Inspect WebXR VR Requirements and 2D Mobile Fallback Status"
             >
               <Glasses className="w-4 h-4 text-slate-400" />
@@ -104,17 +120,21 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
 
           <button
             onClick={onOpenTutorial}
-            className="flex items-center justify-center gap-2 px-4 py-3 min-h-[44px] bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500 text-slate-300 hover:text-cyan-200 font-mono text-xs rounded-xl transition-colors active:scale-95"
+            disabled={isStartingVR}
+            aria-label="Open mission briefing and hand-gesture guide"
+            className="flex items-center justify-center gap-2 px-4 py-3 min-h-[48px] bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500 text-slate-300 hover:text-cyan-200 font-mono text-xs rounded-xl transition-colors active:scale-95 disabled:opacity-50"
           >
             <HelpCircle className="w-4 h-4" />
             <span>BRIEFING</span>
           </button>
         </div>
 
-        <div className="mt-4 sm:mt-5 text-[10px] sm:text-[11px] font-mono text-slate-500 flex items-center justify-center gap-2 flex-wrap">
-          <span>TOUCH &bull; MOUSE CONTROLS</span>
+        <div className="mt-4 sm:mt-5 text-[10px] sm:text-[11px] font-mono text-slate-400 flex items-center justify-center gap-2 flex-wrap">
+          <span>CONTROLLER-FREE XRHAND TRACKING</span>
           <span>&bull;</span>
-          <span>WEBXR SEATED VR COMPLIANT</span>
+          <span>SEATED &amp; STANDING CALIBRATION</span>
+          <span>&bull;</span>
+          <span>2D TOUCH &amp; MOUSE READY</span>
         </div>
       </div>
     </div>

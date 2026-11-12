@@ -189,7 +189,7 @@ export interface VRInteractionAdapter {
   vrSupportStatus?: VRSupportStatus;
   handTrackingStatus?: HandTrackingStatus;
   activeHandsCount?: number;
-  errorMessage?: string;
+  errorMessage?: string | null;
   onSelectRay?(origin: [number, number, number], direction: [number, number, number]): void;
   onRotateObject?(crystalId: CrystalId, deltaAngle: number): void;
   onTranslateObject?(crystalId: CrystalId, deltaPos: [number, number, number]): void;

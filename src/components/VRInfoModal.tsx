@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { X, CheckCircle, Glasses, ShieldCheck, Target, RotateCw, AlertTriangle, Play, Sparkles, Hand } from 'lucide-react';
+import { X, CheckCircle, Glasses, ShieldCheck, Target, RotateCw, AlertTriangle, Play, Sparkles, Hand, Loader2 } from 'lucide-react';
 import { VRSupportStatus, HandTrackingStatus } from '../types/game';
 
 interface VRInfoModalProps {
@@ -11,6 +11,7 @@ interface VRInfoModalProps {
   vrErrorMessage?: string | null;
   handTrackingStatus?: HandTrackingStatus;
   onOpenHandsGuide?: () => void;
+  isStartingVR?: boolean;
 }
 
 export const VRInfoModal: React.FC<VRInfoModalProps> = ({
@@ -22,6 +23,7 @@ export const VRInfoModal: React.FC<VRInfoModalProps> = ({
   vrErrorMessage,
   handTrackingStatus = 'unavailable',
   onOpenHandsGuide,
+  isStartingVR = false,
 }) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -37,6 +39,7 @@ export const VRInfoModal: React.FC<VRInfoModalProps> = ({
 
   const isVRActive = vrSupportStatus === 'active';
   const isVRSupported = vrSupportStatus === 'supported';
+  const isVRError = vrSupportStatus === 'error';
 
   return (
     <div
@@ -62,7 +65,7 @@ export const VRInfoModal: React.FC<VRInfoModalProps> = ({
           <div className="flex items-center gap-2.5">
             <Glasses className="w-5 h-5 text-cyan-400 shrink-0" />
             <h2 id="vr-spec-title" className="text-xs sm:text-sm font-bold font-mono tracking-wider text-slate-100 uppercase">
-              PHASE 5 // WEBXR IMMERSIVE VR
+              PHASE 13 // WEBXR IMMERSIVE VR & FALLBACK
             </h2>
           </div>
 
@@ -70,6 +73,8 @@ export const VRInfoModal: React.FC<VRInfoModalProps> = ({
             className={`text-[9px] sm:text-[10px] font-mono px-2 py-0.5 rounded-full border shrink-0 ${
               isVRActive
                 ? 'bg-emerald-950 border-emerald-500 text-emerald-300 font-bold'
+                : isVRError
+                ? 'bg-amber-950/80 border-amber-500/80 text-amber-300 font-bold'
                 : isVRSupported
                 ? 'bg-cyan-950 border-cyan-500 text-cyan-300'
                 : 'bg-slate-900 border-slate-700 text-slate-400'
@@ -77,58 +82,94 @@ export const VRInfoModal: React.FC<VRInfoModalProps> = ({
           >
             {isVRActive
               ? 'VR ACTIVE'
+              : isVRError
+              ? 'VR INIT FAILED'
               : isVRSupported
-              ? 'VR READY'
-              : '2D MOBILE / WEB'}
+              ? 'VR BROWSER READY'
+              : '2D DESKTOP / MOBILE'}
           </span>
         </div>
 
-        {/* WebXR Session Launcher Banner */}
+        {/* WebXR Session Launcher Banner & Failure Fallback */}
         <div className="mb-4 p-3 rounded-lg border bg-slate-900/60 border-slate-800">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <div>
-              <div className="text-xs font-mono font-bold text-white">
-                {isVRActive
-                  ? 'IMMERSIVE VR SESSION RUNNING'
-                  : isVRSupported
-                  ? 'COMPATIBLE VR HEADSET DETECTED'
-                  : 'DESKTOP / MOBILE 2D MODE'}
+              <div className="text-xs font-mono font-bold text-white flex items-center gap-1.5">
+                {isVRError && <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />}
+                <span>
+                  {isVRActive
+                    ? 'IMMERSIVE VR SESSION RUNNING'
+                    : isVRError
+                    ? 'VR INITIALIZATION FAILED'
+                    : isVRSupported
+                    ? 'WEBXR IMMERSIVE-VR SUPPORTED BY BROWSER'
+                    : 'DESKTOP / MOBILE 2D MODE'}
+                </span>
               </div>
               <p className="text-[11px] text-slate-400 font-sans mt-0.5 leading-relaxed">
                 {isVRActive
                   ? 'Stereoscopic rendering and controller aim rays are active in your headset.'
+                  : isVRError
+                  ? 'Compatible WebXR headset not detected or session was cancelled. Full interactive 3D desktop and mobile touch controls remain available.'
                   : isVRSupported
-                  ? 'Click below to launch WebXR seated stereoscopic mode.'
+                  ? 'Browser reports WebXR immersive-vr capability. To enter VR, connect an active headset or launch from a VR browser. Full 2D desktop/touch controls remain available.'
                   : 'WebXR immersive sessions require a WebXR browser (e.g. Meta Quest Browser, Chrome on PC with VR headset). Standard mouse and touch controls are fully active and optimized on this device.'}
               </p>
             </div>
 
-            {isVRActive ? (
-              <button
-                onClick={() => {
-                  onExitVR?.();
-                  onClose();
-                }}
-                className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-emerald-500/80 rounded-lg text-xs font-mono font-bold text-emerald-300 transition-colors shrink-0 active:scale-95 touch-manipulation"
-              >
-                EXIT VR
-              </button>
-            ) : isVRSupported ? (
-              <button
-                onClick={() => {
-                  onEnterVR?.();
-                  onClose();
-                }}
-                className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-slate-950 rounded-lg text-xs font-mono font-bold transition-all shadow-md shadow-cyan-500/25 shrink-0 flex items-center justify-center gap-1.5 active:scale-95 touch-manipulation"
-              >
-                <Glasses className="w-4 h-4" />
-                <span>ENTER VR</span>
-              </button>
-            ) : null}
+            <div className="flex items-center gap-2 shrink-0">
+              {isVRActive ? (
+                <button
+                  onClick={() => {
+                    onExitVR?.();
+                    onClose();
+                  }}
+                  className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-emerald-500/80 rounded-lg text-xs font-mono font-bold text-emerald-300 transition-colors shrink-0 active:scale-95 touch-manipulation"
+                >
+                  EXIT VR
+                </button>
+              ) : isVRError || isVRSupported ? (
+                <div className="flex flex-col sm:flex-row items-stretch gap-2 w-full sm:w-auto">
+                  <button
+                    onClick={() => {
+                      onEnterVR?.();
+                    }}
+                    disabled={isStartingVR}
+                    className="min-h-[44px] px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-slate-950 rounded-lg text-xs font-mono font-bold transition-all shadow-md shadow-cyan-500/25 shrink-0 flex items-center justify-center gap-1.5 active:scale-95 touch-manipulation disabled:opacity-60"
+                  >
+                    {isStartingVR ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
+                        <span>STARTING...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Glasses className="w-4 h-4" />
+                        <span>{isVRError ? 'RETRY VR' : 'ENTER VR'}</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={onClose}
+                    className="min-h-[44px] px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-xs font-mono text-slate-300 hover:text-white transition-colors shrink-0 active:scale-95 touch-manipulation"
+                  >
+                    CONTINUE IN 2D
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={onClose}
+                  className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-xs font-mono text-slate-300 hover:text-white transition-colors shrink-0 active:scale-95 touch-manipulation"
+                >
+                  CONTINUE IN 2D
+                </button>
+              )}
+            </div>
           </div>
 
           {vrErrorMessage && (
-            <div className="mt-2 pt-2 border-t border-slate-800 flex items-start gap-1.5 text-[11px] font-mono text-amber-300">
+            <div className="mt-2.5 pt-2 border-t border-slate-800 flex items-start gap-1.5 text-[11px] font-mono text-amber-300">
               <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
               <span>{vrErrorMessage}</span>
             </div>
@@ -184,7 +225,7 @@ export const VRInfoModal: React.FC<VRInfoModalProps> = ({
                 )}
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5 font-sans">
-                WebXR 25-joint skeletal hand tracking with procedural visual energy nodes, index-finger pointing ray, and natural pinch-to-dial rotation. Active in compatible VR browsers (e.g. Meta Quest Browser with hands enabled). Outside VR, mouse and touch remain fully active.
+                WebXR 25-joint skeletal hand tracking with view-relative pinch-to-rotate, seated air-swipe ±45° snap-turning, an interactive Wrist/Palm Menu (Start, Pause, Reset, Node Focus, Exit VR), and 3D Phase 3 Cipher &amp; Story panels—no controllers required.
               </p>
             </div>
           </div>

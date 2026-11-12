@@ -25,6 +25,7 @@ export interface CrystalsManager {
   rotateCrystal(id: CrystalId, deltaAngle: number): void;
   setCrystalRotation(id: CrystalId, angle: number): void;
   repositionCrystal(id: CrystalId, newSlot: number, newPos: THREE.Vector3): void;
+  setPedestalElevation(elevationY: number): void;
   update(time: number, delta: number): void;
   dispose(): void;
 }
@@ -40,30 +41,37 @@ export function createCrystals(
   crystalsMasterGroup.name = 'CrystalsMaster';
   scene.add(crystalsMasterGroup);
 
-  // Procedural canvas texture for holographic compass ring
-  const compassCanvas = document.createElement('canvas');
-  compassCanvas.width = 256;
-  compassCanvas.height = 256;
-  const cCtx = compassCanvas.getContext('2d')!;
-  cCtx.clearRect(0, 0, 256, 256);
-  cCtx.strokeStyle = 'rgba(56, 189, 248, 0.7)';
-  cCtx.lineWidth = 2;
-  cCtx.beginPath();
-  cCtx.arc(128, 128, 115, 0, Math.PI * 2);
-  cCtx.stroke();
-  for (let a = 0; a < 360; a += 15) {
-    const rad = (a * Math.PI) / 180;
-    const isMajor = a % 45 === 0;
-    const len = isMajor ? 14 : 7;
-    const r1 = 115;
-    const r2 = 115 - len;
-    cCtx.beginPath();
-    cCtx.moveTo(128 + Math.cos(rad) * r1, 128 + Math.sin(rad) * r1);
-    cCtx.lineTo(128 + Math.cos(rad) * r2, 128 + Math.sin(rad) * r2);
-    cCtx.stroke();
+  // Procedural canvas texture for holographic compass ring (headless-safe for Node verification)
+  const compassCanvas = typeof document !== 'undefined' ? document.createElement('canvas') : null;
+  let compassTex: THREE.Texture;
+  if (compassCanvas) {
+    compassCanvas.width = 256;
+    compassCanvas.height = 256;
+    const cCtx = compassCanvas.getContext('2d');
+    if (cCtx) {
+      cCtx.clearRect(0, 0, 256, 256);
+      cCtx.strokeStyle = 'rgba(56, 189, 248, 0.7)';
+      cCtx.lineWidth = 2;
+      cCtx.beginPath();
+      cCtx.arc(128, 128, 115, 0, Math.PI * 2);
+      cCtx.stroke();
+      for (let a = 0; a < 360; a += 15) {
+        const rad = (a * Math.PI) / 180;
+        const isMajor = a % 45 === 0;
+        const len = isMajor ? 14 : 7;
+        const r1 = 115;
+        const r2 = 115 - len;
+        cCtx.beginPath();
+        cCtx.moveTo(128 + Math.cos(rad) * r1, 128 + Math.sin(rad) * r1);
+        cCtx.lineTo(128 + Math.cos(rad) * r2, 128 + Math.sin(rad) * r2);
+        cCtx.stroke();
+      }
+    }
+    compassTex = new THREE.CanvasTexture(compassCanvas);
+    compassTex.colorSpace = THREE.SRGBColorSpace;
+  } else {
+    compassTex = new THREE.Texture();
   }
-  const compassTex = new THREE.CanvasTexture(compassCanvas);
-  compassTex.colorSpace = THREE.SRGBColorSpace;
 
   initialData.forEach((data) => {
     const crystalGroup = new THREE.Group();
@@ -246,6 +254,13 @@ export function createCrystals(
         inst.targetPosition.copy(newPos);
       }
     },
+    setPedestalElevation(elevationY: number) {
+      if (!Number.isFinite(elevationY)) return;
+      const clampedY = Math.max(0.95, Math.min(1.65, elevationY));
+      instances.forEach((inst) => {
+        inst.targetPosition.y = clampedY;
+      });
+    },
     update(time: number, delta: number) {
       instances.forEach((inst, id) => {
         // Smooth exponential damping for rotation
@@ -309,7 +324,7 @@ export function createCrystals(
     },
     dispose() {
       compassTex.dispose();
-      compassCanvas.remove();
+      compassCanvas?.remove();
       instances.forEach((inst) => {
         inst.coreMesh.geometry.dispose();
         (inst.coreMesh.material as THREE.Material).dispose();

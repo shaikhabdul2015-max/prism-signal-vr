@@ -1,0 +1,60 @@
+{
+  "stage": "STAGE_5_2_GOOGLE_CLOUD_KMS_INTEGRATION_AND_VALIDATION",
+  "project": "PRISM SIGNAL: BEYOND THE VOID",
+  "target_email": "shaikhabdul2015@gmail.com",
+  "timestamp": "2026-11-08T03:41:00Z",
+  "classification": "REAL_KMS_INTEGRATED_PENDING_FULL_VALIDATION",
+  "environment": {
+    "gcp_project_id": "ais-asia-east1-0c8ec1ba1703435",
+    "gcp_project_number": "527838610455",
+    "service_account": "ais-sandbox@ais-asia-east1-0c8ec1ba1703435.iam.gserviceaccount.com",
+    "cloud_kms_location": "global",
+    "key_ring_id": "prism-keyring",
+    "crypto_key_id": "prism-kek",
+    "key_ring_resource": "projects/ais-asia-east1-0c8ec1ba1703435/locations/global/keyRings/prism-keyring",
+    "crypto_key_resource": "projects/ais-asia-east1-0c8ec1ba1703435/locations/global/keyRings/prism-keyring/cryptoKeys/prism-kek"
+  },
+  "live_cloud_api_probe": {
+    "endpoint": "https://cloudkms.googleapis.com/v1/projects/ais-asia-east1-0c8ec1ba1703435/locations/global/keyRings",
+    "http_status": 403,
+    "error_status": "PERMISSION_DENIED",
+    "error_reason": "SERVICE_DISABLED",
+    "message": "Cloud Key Management Service (KMS) API has not been used in project 527838610455 before or it is disabled.",
+    "activation_url": "https://console.developers.google.com/apis/api/cloudkms.googleapis.com/overview?project=527838610455"
+  },
+  "test_metrics": {
+    "total_tests": 424,
+    "passed_tests": 424,
+    "failed_tests": 0,
+    "skipped_tests": 0,
+    "total_suites": 158,
+    "previous_baseline": 409,
+    "new_gcp_kms_tests": 15,
+    "zero_regressions_verified": true,
+    "typescript_errors": 0,
+    "eslint_errors": 0,
+    "devsecops_gates_passed": 5
+  },
+  "cryptographic_performance": {
+    "symmetric_cipher": "AES-256-GCM (NIST SP 800-38D)",
+    "iv_length_bits": 96,
+    "auth_tag_length_bits": 128,
+    "dek_length_bits": 256,
+    "envelope_encrypt_duration_ms": 0.052,
+    "envelope_decrypt_duration_ms": 0.046,
+    "rotation_duration_ms": 1.486,
+    "rto_restore_duration_ms": 0.361,
+    "rto_sla_target_ms": 50.0,
+    "rto_sla_met": true
+  },
+  "iam_validation": {
+    "enforced_roles": [
+      "roles/cloudkms.cryptoKeyEncrypter",
+      "roles/cloudkms.cryptoKeyDecrypter",
+      "roles/cloudkms.admin",
+      "roles/cloudkms.viewer"
+    ],
+    "fail_closed_enforced": true,
+    "silent_fallback_blocked": true
+  }
+}

@@ -49,3 +49,126 @@ input[type='range']::-moz-range-thumb {
   box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
   cursor: pointer;
 }
+
+/* Styling for HandDiagnosticsModal semantic elements */
+section[role="dialog"][aria-labelledby="hand-diagnostics-title"] {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  color: #f1f5f9;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+section[role="dialog"][aria-labelledby="hand-diagnostics-title"] h2 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #38bdf8;
+  margin-bottom: 0.25rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+section[role="dialog"][aria-labelledby="hand-diagnostics-title"] label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+section[role="dialog"][aria-labelledby="hand-diagnostics-title"] select {
+  background-color: #020617;
+  border: 1px solid #334155;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  color: #e2e8f0;
+  font-size: 0.875rem;
+  font-family: inherit;
+  outline: none;
+}
+
+section[role="dialog"][aria-labelledby="hand-diagnostics-title"] select:focus {
+  border-color: #38bdf8;
+}
+
+section[role="dialog"][aria-labelledby="hand-diagnostics-title"] button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 40px;
+}
+
+section[role="dialog"][aria-labelledby="hand-diagnostics-title"] button[type="button"]:not(:last-child) {
+  background-color: #0284c7;
+  color: #ffffff;
+  border: none;
+}
+
+section[role="dialog"][aria-labelledby="hand-diagnostics-title"] button[type="button"]:not(:last-child):hover:not(:disabled) {
+  background-color: #0369a1;
+}
+
+section[role="dialog"][aria-labelledby="hand-diagnostics-title"] button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+section[role="dialog"][aria-labelledby="hand-diagnostics-title"] button:last-child {
+  background-color: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+  margin-top: 0.5rem;
+}
+
+section[role="dialog"][aria-labelledby="hand-diagnostics-title"] button:last-child:hover {
+  background-color: #334155;
+  color: #ffffff;
+}
+
+section[role="dialog"][aria-labelledby="hand-diagnostics-title"] p[role="status"] {
+  font-size: 0.8125rem;
+  color: #38bdf8;
+}
+
+section[role="dialog"][aria-labelledby="hand-diagnostics-title"] p[role="alert"] {
+  font-size: 0.8125rem;
+  color: #f87171;
+  background-color: rgba(127, 29, 29, 0.3);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+}
+
+section[role="dialog"][aria-labelledby="hand-diagnostics-title"] section[aria-live="polite"] {
+  background-color: #020617;
+  border: 1px solid #1e293b;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+section[role="dialog"][aria-labelledby="hand-diagnostics-title"] section[aria-live="polite"] h3 {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #c084fc;
+}
+
+section[role="dialog"][aria-labelledby="hand-diagnostics-title"] section[aria-live="polite"] h4 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  text-transform: uppercase;
+  margin-top: 0.375rem;
+}
+
+section[role="dialog"][aria-labelledby="hand-diagnostics-title"] section[aria-live="polite"] ul {
+  padding-left: 1.25rem;
+  list-style-type: disc;
+}
